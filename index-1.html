@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Safai Setu — Kachra Se Kamaal</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E♻️%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{--ink:#11261E;--paper:#F4F7F0;--card:#fff;--line:#d9e2d3;--muted:#5b6b62;--green:#1E8A52;--blue:#1F63C6;--yellow:#F2B01E;--red:#D63B2F;--r:14px}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--paper);color:var(--ink);line-height:1.55}
+h1,h2,h3{font-family:'Bricolage Grotesque','DM Sans',system-ui,sans-serif;line-height:1.08;margin:0 0 .5em;letter-spacing:-.02em}
+h2{font-size:clamp(1.8rem,4vw,2.6rem)} h3{font-size:1.25rem}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.top{position:sticky;top:0;z-index:50;background:var(--ink);color:#fff;display:flex;align-items:center;gap:16px;padding:10px 20px;flex-wrap:wrap}
+.brand{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:1.4rem;text-decoration:none;display:flex;align-items:center;gap:8px}
+.logo{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:var(--yellow);color:var(--ink)}
+#nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+#nav a{color:#cfe0d6;text-decoration:none;padding:7px 12px;border-radius:999px;font-size:.95rem}
+#nav a:hover{background:#1d3a2f;color:#fff}
+#nav a.on{background:#fff;color:var(--ink);font-weight:700}
+#burger{display:none;margin-left:auto;background:none;border:1px solid #3b5a4c;color:#fff;border-radius:8px;font-size:1.2rem;padding:4px 10px;cursor:pointer}
+@media(max-width:800px){#burger{display:block}#nav{display:none;width:100%;flex-direction:column;margin:0}#nav.open{display:flex}}
+.wrap{max-width:1160px;margin:0 auto;padding:32px 20px}
+.narrow{max-width:980px}
+.lead{color:var(--muted);font-size:1.1rem;max-width:62ch}
+.btn{display:inline-block;border:0;cursor:pointer;background:var(--ink);color:#fff;font:700 1rem 'DM Sans',sans-serif;padding:12px 20px;border-radius:12px;text-decoration:none}
+.btn:hover{filter:brightness(1.2)}
+.btn.alt{background:#fff;color:var(--ink);border:2px solid var(--ink)}
+.btn.sm{padding:7px 12px;font-size:.88rem;border-radius:9px}
+.btn:disabled{opacity:.55;cursor:default}
+.btn.bin-wet{background:var(--green)}.btn.bin-dry{background:var(--blue)}.btn.bin-ewaste{background:var(--yellow);color:var(--ink)}.btn.bin-haz{background:var(--red)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:22px}
+label{display:block;font-weight:700;margin:14px 0 6px;font-size:.95rem}
+input,select,textarea{width:100%;padding:11px 12px;border:1.5px solid #c5d1be;border-radius:10px;font:inherit;background:#fff;color:var(--ink)}
+textarea{min-height:90px;resize:vertical}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+@media(max-width:800px){.cols{grid-template-columns:1fr}}
+.map{height:340px;border-radius:12px;border:1.5px solid #c5d1be;overflow:hidden;background:#e8efe3}
+.map.tall{height:430px}
+.mapfail{padding:20px;color:var(--muted)}
+.pin{display:block;width:20px;height:20px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.45)}
+.hint{color:var(--muted);font-size:.88rem;margin:6px 0 0}
+.prev img{max-width:160px;border-radius:10px;margin-top:8px;display:block}
+/* hero */
+.hero{background:var(--ink);color:#fff;overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:1.25fr .75fr;gap:30px;align-items:center;padding-top:56px;padding-bottom:56px}
+@media(max-width:860px){.hero .wrap{grid-template-columns:1fr}}
+.hero h1{font-size:clamp(3.2rem,10vw,7.4rem);font-weight:800;margin:0 0 18px}
+.hero p{color:#c3d6cb;font-size:1.15rem;max-width:52ch}
+.cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+.hero .btn{background:var(--yellow);color:var(--ink)}
+.hero .btn.alt{background:transparent;color:#fff;border-color:#4a6b5b}
+.bins{display:flex;gap:14px;align-items:flex-end;justify-content:center;min-height:230px}
+.bin{width:76px;border-radius:8px 8px 16px 16px;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:12px;font-size:1.7rem}
+.bin::before{content:"";position:absolute;top:-13px;left:-7px;right:-7px;height:14px;border-radius:6px;background:inherit;filter:brightness(.82);transform-origin:left bottom;animation:lid .7s cubic-bezier(.3,1.6,.5,1) both;animation-delay:var(--d)}
+.bin small{font:700 .72rem 'DM Sans',sans-serif;margin-top:6px;color:#fff}
+.bin.y small{color:var(--ink)}
+@keyframes lid{from{transform:rotate(-32deg)}to{transform:rotate(0)}}
+.band{background:var(--yellow);color:var(--ink);text-align:center;padding:14px 20px;font:800 clamp(1.1rem,3vw,1.7rem) 'Bricolage Grotesque',sans-serif}
+.stats{display:flex;gap:28px;flex-wrap:wrap;margin-top:28px;color:#c3d6cb}
+.stats b{display:block;font:800 1.9rem 'Bricolage Grotesque',sans-serif;color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.feat{background:#fff;border:1px solid var(--line);border-left:8px solid var(--c,var(--green));border-radius:var(--r);padding:18px 18px 20px;text-decoration:none;display:block}
+.feat:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(17,38,30,.08)}
+.feat .ic{font-size:1.8rem}.feat p{margin:0;color:var(--muted)}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;counter-reset:s;border:2px solid var(--ink);border-radius:var(--r);overflow:hidden;background:#fff}
+.step{padding:20px;border-right:2px solid var(--ink)}
+.step:last-child{border-right:0}
+.step::before{counter-increment:s;content:counter(s);display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--ink);color:#fff;font-weight:800;margin-bottom:10px}
+@media(max-width:700px){.step{border-right:0;border-bottom:2px solid var(--ink)}.step:last-child{border-bottom:0}}
+/* status */
+.tag{display:inline-block;padding:3px 10px;border-radius:999px;font-weight:700;font-size:.8rem;color:#fff}
+.tag.Pending{background:var(--red)}.tag.In-Progress{background:var(--yellow);color:var(--ink)}.tag.Resolved{background:var(--green)}
+.timeline{list-style:none;margin:16px 0 0;padding:0 0 0 6px}
+.timeline li{position:relative;padding:0 0 22px 34px;color:var(--muted)}
+.timeline li::before{content:"";position:absolute;left:0;top:2px;width:18px;height:18px;border-radius:50%;border:3px solid #c5d1be;background:#fff}
+.timeline li::after{content:"";position:absolute;left:8px;top:22px;bottom:0;width:2px;background:#c5d1be}
+.timeline li:last-child::after{display:none}
+.timeline li.done{color:var(--ink)}
+.timeline li.done::before{background:var(--green);border-color:var(--green)}
+.timeline li b{display:block}
+.mine{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.row{display:flex;gap:10px}.row>*{flex:1}
+/* dashboard */
+.dhead{background:var(--ink);color:#fff}
+.dhead .wrap{padding-top:28px;padding-bottom:28px}
+.dhead h2{margin-bottom:6px}
+.mantra{color:var(--yellow);font:800 1.25rem 'Bricolage Grotesque',sans-serif;min-height:1.6em}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;border-top:6px solid var(--c,var(--ink))}
+.kpi b{display:block;font:800 2rem 'Bricolage Grotesque',sans-serif;line-height:1.1}
+.kpi span{color:var(--muted);font-size:.9rem}
+.dgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px}
+@media(max-width:980px){.dgrid{grid-template-columns:1fr}}
+.donut{width:150px;height:150px;display:block;margin:0 auto}
+.dtxt{font:800 7px 'Bricolage Grotesque',sans-serif;fill:var(--ink)}.dsub{font:400 2.6px 'DM Sans',sans-serif;fill:var(--muted)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:10px;font-size:.88rem}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
+.hbar{display:grid;grid-template-columns:120px 1fr 28px;gap:8px;align-items:center;margin:8px 0;font-size:.9rem}
+.hbar div{height:14px;background:#e6ede1;border-radius:8px;overflow:hidden}.hbar div i{display:block;height:100%;background:var(--blue);border-radius:8px}
+.lsvg{width:100%;height:auto;display:block}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.chip{border:2px solid var(--ink);background:#fff;border-radius:999px;padding:5px 14px;font:700 .88rem 'DM Sans',sans-serif;cursor:pointer}
+.chip.on{background:var(--ink);color:#fff}
+.hot{background:#fff3d6;border:2px solid var(--yellow);border-radius:12px;padding:10px 14px;margin:10px 0;font-weight:500}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td select{padding:5px 8px;width:auto}
+/* learn / recycle */
+.bincards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:18px 0 30px}
+.bincard{border-radius:var(--r);padding:18px;color:#fff;background:var(--c)}
+.bincard.y{color:var(--ink)}.bincard .e{font-size:2rem}.bincard p{margin:0;opacity:.95}
+.qopts{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+.fb{font-weight:700;min-height:1.5em}
+.stage{display:flex;gap:14px;align-items:flex-start;padding:14px;border:2px solid var(--line);border-radius:12px;margin-bottom:10px;background:#fff;cursor:pointer;width:100%;text-align:left;font:inherit;color:inherit}
+.stage .n{flex:none;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#e6ede1;font-size:1.3rem}
+.stage.on{border-color:var(--ink);box-shadow:4px 4px 0 var(--ink)}
+.stage.on .n{background:var(--yellow)}
+.stage b{display:block}.stage span{color:var(--muted);font-size:.93rem}
+.reborn{background:var(--ink);color:#fff;border-radius:var(--r);padding:16px 20px;margin-top:14px}
+.reborn b{color:var(--yellow)}
+input[type=range]{padding:0}
+.res{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:14px}
+.res div{background:#e9f3e5;border-radius:12px;padding:12px}.res b{display:block;font:800 1.5rem 'Bricolage Grotesque',sans-serif}
+footer{background:var(--ink);color:#9bb5a8;text-align:center;padding:26px 20px;margin-top:40px}
+footer b{color:var(--yellow)}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:12px;opacity:0;pointer-events:none;transition:.25s;z-index:999;max-width:90vw;border:2px solid var(--yellow)}
+#toast.show{opacity:1;transform:translateX(-50%)}
+.ok{text-align:center;padding:20px 0}.ok .big{font-size:3rem}.ok code{background:#e9f3e5;padding:4px 12px;border-radius:8px;font-size:1.3rem;font-weight:700}
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.bcard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.bhead{display:flex;justify-content:space-between;gap:8px}.bhead span{color:var(--muted);font-size:.85rem}
+.bbar{height:16px;background:#e6ede1;border-radius:9px;overflow:hidden;margin:8px 0}
+.bbar i{display:block;height:100%;border-radius:9px;transition:width .6s}
+.bmeta{display:flex;gap:12px;flex-wrap:wrap;font-size:.88rem;align-items:center}.bmeta span{color:var(--muted)}
+.bact{margin-top:8px}
+.bgrid{display:grid;gap:10px;max-height:430px;overflow:auto;padding-right:4px}
+.badge{display:inline-block;padding:5px 12px;border-radius:999px;background:#fff;border:2px solid var(--ink);font-weight:700;font-size:.88rem;margin:6px 0 14px}
+.tag.pri-High{background:var(--red)}.tag.pri-Medium{background:var(--yellow);color:var(--ink)}.tag.pri-Low{background:#5b6b62}
+.scanbox img{max-width:100%;max-height:300px;border-radius:12px;display:none;margin:12px 0}
+.verdict{border-radius:var(--r);padding:16px 18px;color:#fff;background:var(--c);margin-top:12px}
+.verdict.y{color:var(--ink)}
+.conf{height:10px;background:rgba(255,255,255,.35);border-radius:6px;margin:8px 0;overflow:hidden}.conf i{display:block;height:100%;background:#fff}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#/home"><span class="logo">♻</span>Safai Setu</a>
+  <button id="burger" aria-label="Open menu">☰</button>
+  <nav id="nav" aria-label="Main"></nav>
+</header>
+<main id="app"><section class="wrap"><p>Loading Safai Setu…</p></section></main>
+<footer>
+  <p><b>Safai Setu</b> · Kachra Se Kamaal · Built for <span id="teamName"></span></p>
+  <p>Demo data is stored only in your browser.</p>
+</footer>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+"use strict";
+/* ===== CONFIG — change these for your team ===== */
+const TEAM = "Team Your-Team-Name · Your College";
+const CENTER = [28.6139, 77.2090]; // map centre (New Delhi). Change to your city.
+/* ===== CLOUD (Firebase) — paste your keys here. Leave as-is to run in offline demo mode ===== */
+const FIREBASE_CONFIG = {
+  apiKey: "yahan apni apiKey paste karo",
+  authDomain: "safai-setu-42ede.firebaseapp.com",
+  projectId: "safai-setu-42ede",
+  storageBucket: "safai-setu-42ede.firebasestorage.app",
+  messagingSenderId: "993349500165",
+  appId: "yahan apni appId paste karo"
+};
+const ADMIN_CODE = "SAFAI2026"; // typed at registration to become admin (hackathon shortcut)
+
+const SLOGANS = [
+  "Kachra Se Kamaal",
+  "Hum Saaf, Hum Safal",
+  "Ek Kadam Safai Ki Ore",
+  "Gila Hara, Sukha Neela",
+  "Mera Shehar, Meri Zimmedari",
+  "Jo Phenka, Wahi Phir Banega",
+  "Segregate Today, Shine Tomorrow",
+  "Safai Hamara Swabhimaan"
+];
+const CATS = {
+  overflow: "Overflowing bin",
+  road: "Garbage on road",
+  missed: "Missed collection",
+  dumping: "Illegal dumping",
+  other: "Other issue",
+  pickup: "Pickup request"
+};
+const STATUSES = ["Pending", "In Progress", "Resolved"];
+const SCOLOR = { "Pending": "#D63B2F", "In Progress": "#F2B01E", "Resolved": "#1E8A52" };
+const BINS_GUIDE = [
+  { k: "wet", name: "Green · Wet", c: "#1E8A52", e: "🥬", y: false, items: "Food scraps, fruit peels, tea leaves, garden waste" },
+  { k: "dry", name: "Blue · Dry", c: "#1F63C6", e: "📰", y: false, items: "Paper, plastic, glass, metal, cartons" },
+  { k: "ewaste", name: "Yellow · E-waste", c: "#F2B01E", e: "🔌", y: true, items: "Old phones, chargers, cables, small electronics" },
+  { k: "haz", name: "Red · Hazardous", c: "#D63B2F", e: "☣️", y: false, items: "Batteries, CFL bulbs, medicines, paint, sanitary waste" }
+];
+const KEY = { users: "ss_users", data: "ss_complaints", session: "ss_session" };
+
+/* ===== helpers ===== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+function load(k, def) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch (e) { return def; } }
+function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { toast("Browser storage is full. Try a smaller photo."); return false; } }
+let toastT;
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 3200); }
+function go(p) { location.hash = "#/" + p; }
+function fmt(t) { return new Date(t).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); }
+function ago(t) { const h = Math.round((Date.now() - t) / 36e5); if (h < 1) return "just now"; if (h < 24) return h + "h ago"; return Math.round(h / 24) + "d ago"; }
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const tagCls = s => s.replace(" ", "-");
+
+/* ===== data ===== */
+function seed() {
+  let s = 7; const rnd = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+  const kinds = ["overflow", "road", "missed", "dumping", "other", "pickup"];
+  const addr = ["Sector 4 Market", "Gandhi Nagar Park", "Station Road", "Nehru Colony", "College Gate", "Lake View Society", "Bus Stand", "Ward 12 Lane"];
+  const desc = { overflow: "Bin overflowing for two days", road: "Garbage heap on the roadside", missed: "Collection van did not come", dumping: "Construction debris dumped at night", other: "Stray animals tearing garbage bags", pickup: "Bulk waste pickup" };
+  const now = Date.now(), DAY = 864e5, out = [];
+  for (let i = 0; i < 30; i++) {
+    const age = rnd() * 13, created = now - age * DAY;
+    const cat = kinds[Math.floor(rnd() * kinds.length)];
+    const r = rnd(), pRes = Math.min(.85, age / 10);
+    let status = r < pRes ? "Resolved" : (r < pRes + .25 ? "In Progress" : "Pending");
+    if (age < 1.2 && status === "Resolved") status = "In Progress";
+    const hist = [{ s: "Pending", t: created }];
+    if (status !== "Pending") hist.push({ s: "In Progress", t: created + DAY * (0.2 + rnd() * .4) });
+    if (status === "Resolved") hist.push({ s: "Resolved", t: Math.min(now - 1000, hist[1].t + DAY * (0.3 + rnd() * 1.5)) });
+    const hot = rnd() < .4;
+    const lat = hot ? 28.629 + (rnd() - .5) * .006 : CENTER[0] + (rnd() - .5) * .14;
+    const lng = hot ? 77.219 + (rnd() - .5) * .006 : CENTER[1] + (rnd() - .5) * .14;
+    out.push({ id: "SS-" + (1001 + i), cat, desc: desc[cat], address: addr[Math.floor(rnd() * addr.length)], lat, lng, status, created, hist, user: "citizen@safai.in", photo: null });
+  }
+  return out;
+}
+let CUR = null;
+const FB = { on: false, busy: false, abort: false, seeded: false };
+function currentRoute() { const n = (location.hash.replace(/^#\/?/, "") || "home").split("?")[0]; return VIEWS[n] ? n : "home"; }
+function getAll() { return load(KEY.data, []); }
+function saveAll(a) {
+  const prev = getAll();
+  const ok = save(KEY.data, a);
+  if (FB.on) a.forEach(c => { const p = prev.find(x => x.id === c.id); if (!p || JSON.stringify(p) !== JSON.stringify(c)) fbSet("complaints", c.id, c); });
+  return ok;
+}
+function fbSet(col, id, obj) {
+  const fs = FB.m.fs;
+  return fs.setDoc(fs.doc(FB.db, col, id), JSON.parse(JSON.stringify(obj))).catch(e => { console.error(e); toast("Cloud write failed (" + (e.code || "error") + "). Check Firestore rules."); });
+}
+function initData() {
+  let users = load(KEY.users, []);
+  if (!users.some(u => u.email === "admin@safai.in")) users.push({ name: "City Admin", email: "admin@safai.in", pass: "admin123", role: "admin", points: 0 });
+  if (!users.some(u => u.email === "citizen@safai.in")) users.push({ name: "Demo Citizen", email: "citizen@safai.in", pass: "city123", role: "citizen", points: 40 });
+  save(KEY.users, users);
+  if (!getAll().length) saveAll(seed());
+}
+function nextIdFrom(list) { const n = list.reduce((m, c) => Math.max(m, parseInt(c.id.slice(3), 10) || 0), 1000); return "SS-" + (n + 1); }
+function nextId() { return nextIdFrom(getAll()); }
+function me() { return CUR; }
+function addPoints(email, n) {
+  if (FB.on) {
+    if (CUR && CUR.email === email) { CUR.points = (CUR.points || 0) + n; const fs = FB.m.fs; fs.updateDoc(fs.doc(FB.db, "users", CUR.uid), { points: CUR.points }).catch(() => { }); }
+    return;
+  }
+  const us = load(KEY.users, []); const u = us.find(x => x.email === email);
+  if (u) { u.points = (u.points || 0) + n; save(KEY.users, us); }
+  if (CUR && CUR.email === email) CUR.points = (CUR.points || 0) + n;
+}
+
+/* ===== Firebase (loaded on demand, falls back to local mode) ===== */
+async function initFirebase() {
+  if (!FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey.indexOf("YOUR_") === 0) return false;
+  try {
+    const base = "https://www.gstatic.com/firebasejs/10.12.2/";
+    const mods = await Promise.all([import(base + "firebase-app.js"), import(base + "firebase-auth.js"), import(base + "firebase-firestore.js")]);
+    if (FB.abort) return false;
+    const app = mods[0].initializeApp(FIREBASE_CONFIG);
+    FB.auth = mods[1].getAuth(app); FB.db = mods[2].getFirestore(app); FB.m = { auth: mods[1], fs: mods[2] }; FB.on = true;
+    return true;
+  } catch (e) { console.error(e); return false; }
+}
+function authReady() {
+  return new Promise(res => {
+    let first = true;
+    FB.m.auth.onAuthStateChanged(FB.auth, async u => {
+      if (!FB.busy) {
+        try { CUR = u ? await fbProfile(u) : null; } catch (e) { console.error(e); CUR = null; }
+      }
+      if (first) { first = false; res(); } else if (!FB.busy) { renderNav(currentRoute()); }
+    });
+  });
+}
+async function fbProfile(user, create) {
+  const fs = FB.m.fs, ref = fs.doc(FB.db, "users", user.uid);
+  try { const d = await fs.getDoc(ref); if (d.exists()) return Object.assign({ uid: user.uid }, d.data()); } catch (e) { console.error(e); }
+  const p = Object.assign({ name: (user.email || "user").split("@")[0], email: user.email, role: "citizen", points: 0 }, create || {});
+  try { await fs.setDoc(ref, p); } catch (e) { console.error(e); }
+  return Object.assign({ uid: user.uid }, p);
+}
+async function fbSignIn(email, pass) {
+  FB.busy = true;
+  try { const cred = await FB.m.auth.signInWithEmailAndPassword(FB.auth, email, pass); CUR = await fbProfile(cred.user); return CUR; }
+  finally { FB.busy = false; }
+}
+async function fbRegister(name, email, pass, role) {
+  FB.busy = true;
+  try { const cred = await FB.m.auth.createUserWithEmailAndPassword(FB.auth, email, pass); CUR = await fbProfile(cred.user, { name, email, role, points: 0 }); return CUR; }
+  finally { FB.busy = false; }
+}
+function authMsg(e) {
+  const c = (e && e.code) || "";
+  if (/invalid-credential|wrong-password|user-not-found/.test(c)) return "Wrong email or password.";
+  if (c === "auth/email-already-in-use") return "That email is already registered. Please login.";
+  if (c === "auth/weak-password") return "Password must be at least 6 characters.";
+  if (c === "auth/operation-not-allowed") return "Enable Email/Password sign-in in Firebase Authentication.";
+  if (c === "auth/network-request-failed") return "No internet connection.";
+  return "Login problem: " + (c || "unknown error");
+}
+let liveT;
+function refreshLive() {
+  clearTimeout(liveT);
+  liveT = setTimeout(() => { const r = currentRoute(); if (r === "home" || r === "dashboard") render(true); }, 300);
+}
+function subscribeData() {
+  const fs = FB.m.fs;
+  fs.onSnapshot(fs.collection(FB.db, "complaints"), snap => {
+    const arr = snap.docs.map(d => d.data());
+    if (!arr.length && !FB.seeded) { FB.seeded = true; seed().forEach(c => fbSet("complaints", c.id, c)); return; }
+    save(KEY.data, arr); refreshLive();
+  }, err => { console.error(err); toast("Cloud read failed. Check your Firestore rules."); });
+  fs.onSnapshot(fs.collection(FB.db, "bins"), snap => {
+    if (snap.empty) { if (BIN_LIVE) initBins(); return; }
+    BIN_LIVE = true;
+    BINS = snap.docs.map(d => {
+      const x = d.data();
+      const b = { id: x.id || d.id, name: x.name || d.id, lat: Number(x.lat) || CENTER[0], lng: Number(x.lng) || CENTER[1], fill: Math.max(0, Math.min(100, Number(x.fill) || 0)), temp: x.temp != null ? Number(x.temp) : null, rate: x.rate ? Number(x.rate) : null };
+      trackFill(b); return b;
+    });
+    checkBinAlerts();
+    if (currentRoute() === "bins") drawBins();
+  }, err => console.error(err));
+}
+
+/* ===== maps ===== */
+let maps = [];
+function killMaps() { maps.forEach(m => { try { m.remove(); } catch (e) { } }); maps = []; }
+function mapOK() { return typeof L !== "undefined"; }
+function baseMap(id) {
+  const m = L.map(id).setView(CENTER, 13);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(m);
+  maps.push(m); setTimeout(() => m.invalidateSize(), 200); return m;
+}
+function pin(color) { return L.divIcon({ className: "", html: '<span class="pin" style="background:' + color + '"></span>', iconSize: [20, 20], iconAnchor: [10, 20], popupAnchor: [0, -18] }); }
+function picker(id, st, coordId) {
+  const el = document.getElementById(id); if (!el) return null;
+  if (!mapOK()) { el.innerHTML = '<p class="mapfail">Map needs internet. You can still type the address and submit.</p>'; return null; }
+  const m = baseMap(id); let mk = null;
+  function set(lat, lng, zoom) {
+    st.lat = lat; st.lng = lng;
+    if (mk) mk.setLatLng([lat, lng]); else mk = L.marker([lat, lng], { icon: pin("#D63B2F") }).addTo(m);
+    const c = document.getElementById(coordId); if (c) c.textContent = "Pin: " + lat.toFixed(5) + ", " + lng.toFixed(5);
+    if (zoom) m.setView([lat, lng], 16);
+  }
+  m.on("click", e => set(e.latlng.lat, e.latlng.lng, false));
+  return { set };
+}
+function locate(p) {
+  if (!p) { toast("Map unavailable. Type the address instead."); return; }
+  if (!navigator.geolocation) { toast("Location is not supported on this device."); return; }
+  navigator.geolocation.getCurrentPosition(pos => p.set(pos.coords.latitude, pos.coords.longitude, true), () => toast("Location blocked. Tap the map to drop a pin."), { timeout: 8000 });
+}
+function navURL(c) { return "https://www.google.com/maps/dir/?api=1&destination=" + c.lat.toFixed(5) + "," + c.lng.toFixed(5) + "&travelmode=driving"; }
+function routeURL(list) {
+  const pts = list.filter(c => c.status !== "Resolved");
+  if (!pts.length) return null;
+  let cur = { lat: CENTER[0], lng: CENTER[1] }; const order = [];
+  while (pts.length && order.length < 9) {
+    let bi = 0, bd = 1e9;
+    pts.forEach((p, i) => { const d = Math.pow(p.lat - cur.lat, 2) + Math.pow(p.lng - cur.lng, 2); if (d < bd) { bd = d; bi = i; } });
+    cur = pts.splice(bi, 1)[0]; order.push(cur);
+  }
+  const dest = order.pop();
+  let u = "https://www.google.com/maps/dir/?api=1&destination=" + dest.lat.toFixed(5) + "," + dest.lng.toFixed(5) + "&travelmode=driving";
+  if (order.length) u += "&waypoints=" + order.map(p => p.lat.toFixed(5) + "," + p.lng.toFixed(5)).join("%7C");
+  return u;
+}
+function hotspot(list) {
+  const g = {};
+  list.filter(c => c.status !== "Resolved").forEach(c => { const k = c.lat.toFixed(2) + "," + c.lng.toFixed(2); (g[k] = g[k] || []).push(c); });
+  let best = null; Object.keys(g).forEach(k => { if (!best || g[k].length > best.length) best = g[k]; });
+  if (!best) return null;
+  return { n: best.length, lat: best.reduce((s, c) => s + c.lat, 0) / best.length, lng: best.reduce((s, c) => s + c.lng, 0) / best.length };
+}
+
+/* ===== charts (pure SVG, no library) ===== */
+function donut(parts) {
+  const total = parts.reduce((a, p) => a + p.v, 0), den = total || 1; let off = 25;
+  const arcs = parts.map(p => { const pct = p.v / den * 100; const s = '<circle r="15.9155" cx="21" cy="21" fill="none" stroke="' + p.c + '" stroke-width="6" stroke-dasharray="' + pct + " " + (100 - pct) + '" stroke-dashoffset="' + off + '"/>'; off -= pct; return s; }).join("");
+  const leg = parts.map(p => '<span><i style="background:' + p.c + '"></i>' + p.l + " " + p.v + "</span>").join("");
+  return '<svg viewBox="0 0 42 42" class="donut" role="img" aria-label="Complaint status split"><circle r="15.9155" cx="21" cy="21" fill="none" stroke="#e3e9df" stroke-width="6"/>' + arcs + '<text x="21" y="22.5" text-anchor="middle" class="dtxt">' + total + '</text><text x="21" y="27" text-anchor="middle" class="dsub">total</text></svg><div class="legend">' + leg + "</div>";
+}
+function lineChart(days) {
+  const W = 420, H = 210, pl = 28, pr = 8, pt = 10, pb = 28;
+  const max = Math.max(4, ...days.map(d => Math.max(d.rep, d.res)));
+  const x = i => pl + i * (W - pl - pr) / (days.length - 1);
+  const y = v => pt + (H - pt - pb) * (1 - v / max);
+  const pts = k => days.map((d, i) => x(i).toFixed(1) + "," + y(d[k]).toFixed(1)).join(" ");
+  let grid = "";
+  for (let i = 0; i <= 4; i++) { const v = max * i / 4, yy = y(v).toFixed(1); grid += '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + yy + '" y2="' + yy + '" stroke="#e3e9df"/><text x="' + (pl - 5) + '" y="' + (Number(yy) + 3) + '" text-anchor="end" font-size="9" fill="#5b6b62">' + Math.round(v) + "</text>"; }
+  const xl = days.map((d, i) => i % 2 === 0 ? '<text x="' + x(i).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="9" fill="#5b6b62">' + d.label + "</text>" : "").join("");
+  const dots = k => days.map((d, i) => '<circle cx="' + x(i).toFixed(1) + '" cy="' + y(d[k]).toFixed(1) + '" r="2.8" fill="' + (k === "rep" ? "#D63B2F" : "#1E8A52") + '"/>').join("");
+  return '<svg class="lsvg" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Reported versus resolved in the last 14 days">' + grid + xl +
+    '<polyline fill="none" stroke="#D63B2F" stroke-width="2.5" points="' + pts("rep") + '"/><polyline fill="none" stroke="#1E8A52" stroke-width="2.5" points="' + pts("res") + '"/>' + dots("rep") + dots("res") + "</svg>" +
+    '<div class="legend"><span><i style="background:#D63B2F"></i>Reported</span><span><i style="background:#1E8A52"></i>Resolved</span></div>';
+}
+function trendData(list) {
+  const out = [], DAY = 864e5, today = new Date(); today.setHours(0, 0, 0, 0);
+  for (let i = 13; i >= 0; i--) {
+    const s = today.getTime() - i * DAY, e = s + DAY;
+    const d = new Date(s);
+    out.push({
+      label: d.getDate() + "/" + (d.getMonth() + 1),
+      rep: list.filter(c => c.created >= s && c.created < e).length,
+      res: list.filter(c => { const r = c.hist.find(h => h.s === "Resolved"); return r && r.t >= s && r.t < e; }).length
+    });
+  }
+  return out;
+}
+
+/* ===== views ===== */
+function viewHome() {
+  const all = getAll(), res = all.filter(c => c.status === "Resolved").length;
+  const bins = [[120, "green", "#1E8A52", "🥬", "Gila", ".1s", ""], [165, "blue", "#1F63C6", "📰", "Sukha", ".35s", ""], [135, "yellow", "#F2B01E", "🔌", "E-waste", ".6s", "y"], [105, "red", "#D63B2F", "☣️", "Khatarnaak", ".85s", ""]]
+    .map(b => '<div class="bin ' + b[6] + '" style="height:' + b[0] + "px;background:" + b[2] + ";--d:" + b[5] + '">' + b[3] + "<small>" + b[4] + "</small></div>").join("");
+  return '<section class="hero"><div class="wrap"><div><h1>Kachra Se<br>Kamaal.</h1><p>Report it. Track it. Watch it get recycled. Safai Setu is the bridge between citizens, collectors and recyclers.</p>' +
+    '<div class="cta"><button class="btn" data-go="report">Report an issue</button><button class="btn alt" data-go="pickup">Book a pickup</button><button class="btn alt" data-go="recycle">See the recycling journey</button></div>' +
+    '<div class="stats"><div><b>' + all.length + '</b>complaints logged</div><div><b>' + res + '</b>resolved</div><div><b>' + (all.length ? Math.round(res / all.length * 100) : 0) + '%</b>resolution rate</div></div></div>' +
+    '<div class="bins" aria-hidden="true">' + bins + "</div></div></section>" +
+    '<div class="band" id="slogan">' + SLOGANS[0] + "</div>" +
+    '<section class="wrap"><h2>Everything a clean city needs</h2><div class="grid">' +
+    feat("report", "📸", "Report waste issues", "Overflowing bin? Garbage on the road? Pin it on the map with a photo.", "#D63B2F") +
+    feat("pickup", "🚛", "Waste pickup request", "Schedule a pickup for wet, dry, e-waste, bulk or hazardous waste.", "#1F63C6") +
+    feat("track", "🔎", "Complaint tracking", "Use your complaint ID and see every step until it is resolved.", "#F2B01E") +
+    feat("dashboard", "📊", "Admin dashboard", "Live map, hotspot detection, route planner and charts for the city team.", "#11261E") +
+    feat("learn", "🧠", "Waste awareness", "Learn the four bins, play the quiz and earn eco points.", "#1E8A52") +
+    feat("bins", "📡", "IoT smart bins", "Sensors report fill level live. At 90% a complaint is raised automatically.", "#1F63C6") +
+    feat("scan", "🤖", "AI waste scanner", "Point your camera at an item and the AI names the right bin.", "#F2B01E") +
+    feat("login", "🔐", "Register and login", "Citizens report and track. Admins resolve and analyse.", "#5b6b62") +
+    '</div></section><section class="wrap"><h2>One piece of waste, four steps</h2><div class="steps">' +
+    '<div class="step"><h3>Report</h3><p>Citizen drops a pin and files the complaint.</p></div>' +
+    '<div class="step"><h3>Assign</h3><p>Admin sees it on the map and sends a team.</p></div>' +
+    '<div class="step"><h3>Collect</h3><p>Segregated waste is picked up on the planned route.</p></div>' +
+    '<div class="step"><h3>Recycle</h3><p>Compost, biogas, new paper and metal come back.</p></div></div></section>';
+}
+function feat(go, ic, t, p, c) { return '<a class="feat" href="#/' + go + '" style="--c:' + c + '"><div class="ic">' + ic + "</div><h3>" + t + "</h3><p>" + p + "</p></a>"; }
+function mountHome() {
+  let i = 0; const el = $("#slogan");
+  timers.push(setInterval(() => { i = (i + 1) % SLOGANS.length; if (el) el.textContent = SLOGANS[i]; }, 2600));
+}
+
+function viewReport() {
+  const opts = Object.keys(CATS).filter(k => k !== "pickup").map(k => '<option value="' + k + '">' + CATS[k] + "</option>").join("");
+  return '<section class="wrap narrow"><h2>Report a waste issue</h2><p class="lead">Drop a pin, add a photo, done. You get a complaint ID to track every step.</p>' +
+    '<div class="panel"><form id="rForm"><div class="cols"><div>' +
+    '<label for="rCat">What is the problem?</label><select id="rCat">' + opts + "</select>" +
+    '<label for="rDesc">Describe it</label><textarea id="rDesc" placeholder="e.g. Bin outside Gate 2 has been overflowing since Monday" required></textarea>' +
+    '<label for="rAddr">Landmark or address</label><input id="rAddr" placeholder="Near City Mall, Sector 5" required>' +
+    '<label for="rPhoto">Photo (optional)</label><input id="rPhoto" type="file" accept="image/*"><div class="prev" id="rPrev"></div>' +
+    '<p style="margin-top:18px"><button class="btn" type="submit">Submit complaint</button></p></div>' +
+    '<div><label>Pin the exact spot</label><div id="rMap" class="map"></div><p class="hint" id="rCoords">Tap the map to drop a pin.</p>' +
+    '<p><button class="btn alt sm" type="button" id="locBtn">📍 Use my location</button></p></div></div></form></div></section>';
+}
+function mountReport() {
+  const st = { lat: null, lng: null, photo: null }; const p = picker("rMap", st, "rCoords");
+  $("#locBtn").onclick = () => locate(p);
+  $("#rPhoto").onchange = e => { const f = e.target.files[0]; if (!f) return; readPhoto(f, d => { st.photo = d; $("#rPrev").innerHTML = d ? '<img src="' + d + '" alt="Photo preview">' : "Could not read that image."; }); };
+  $("#rForm").onsubmit = e => {
+    e.preventDefault(); const u = me(); if (!u) { toast("Please login first."); go("login"); return; }
+    let lat = st.lat, lng = st.lng;
+    if (lat == null) { if (p) { toast("Tap the map to drop a pin first."); return; } lat = CENTER[0] + (Math.random() - .5) * .08; lng = CENTER[1] + (Math.random() - .5) * .08; }
+    const now = Date.now();
+    const c = { id: nextId(), cat: $("#rCat").value, desc: $("#rDesc").value.trim(), address: $("#rAddr").value.trim(), lat, lng, status: "Pending", created: now, hist: [{ s: "Pending", t: now }], user: u.email, photo: st.photo };
+    const all = getAll(); all.push(c); if (!saveAll(all)) return;
+    addPoints(u.email, 10);
+    $("#rForm").parentNode.innerHTML = successHTML(c.id, "Complaint submitted. +10 eco points!");
+  };
+}
+function successHTML(id, msg) { return '<div class="ok"><div class="big">✅</div><h3>' + msg + '</h3><p>Your complaint ID</p><p><code>' + id + '</code></p><p><button class="btn" data-go="track">Track it</button> <button class="btn alt" data-go="home">Back home</button></p></div>'; }
+function readPhoto(file, cb) {
+  const r = new FileReader();
+  r.onload = () => { const img = new Image(); img.onload = () => { const s = Math.min(1, 360 / Math.max(img.width, img.height)); const cv = document.createElement("canvas"); cv.width = Math.round(img.width * s); cv.height = Math.round(img.height * s); cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height); cb(cv.toDataURL("image/jpeg", .6)); }; img.onerror = () => cb(null); img.src = r.result; };
+  r.onerror = () => cb(null); r.readAsDataURL(file);
+}
+
+function viewPickup() {
+  return '<section class="wrap narrow"><h2>Book a waste pickup</h2><p class="lead">Segregated waste gets picked first and earns more eco points.</p>' +
+    '<div class="panel"><form id="pForm"><div class="cols"><div>' +
+    '<label for="pType">Type of waste</label><select id="pType"><option>Wet (kitchen)</option><option>Dry (paper, plastic)</option><option>E-waste</option><option>Bulk (furniture, garden)</option><option>Hazardous</option></select>' +
+    '<label for="pQty">Approx. quantity</label><select id="pQty"><option>Up to 5 kg</option><option>5 to 20 kg</option><option>20 to 50 kg</option><option>50 kg or more</option></select>' +
+    '<div class="row"><div><label for="pDate">Date</label><input id="pDate" type="date" required></div><div><label for="pSlot">Time slot</label><select id="pSlot"><option>8 to 10 AM</option><option>10 AM to 1 PM</option><option>2 to 5 PM</option></select></div></div>' +
+    '<label for="pAddr">Pickup address</label><input id="pAddr" placeholder="Flat, building, street" required>' +
+    '<label style="display:flex;gap:8px;align-items:center;font-weight:500"><input type="checkbox" id="pSeg" style="width:auto"> My waste is already segregated</label>' +
+    '<p style="margin-top:18px"><button class="btn" type="submit">Request pickup</button></p></div>' +
+    '<div><label>Pin the pickup spot</label><div id="pMap" class="map"></div><p class="hint" id="pCoords">Tap the map to drop a pin.</p><p><button class="btn alt sm" type="button" id="locBtn">📍 Use my location</button></p></div></div></form></div></section>';
+}
+function mountPickup() {
+  const st = { lat: null, lng: null }; const p = picker("pMap", st, "pCoords");
+  const d = $("#pDate"); d.min = new Date().toISOString().slice(0, 10); d.value = d.min;
+  $("#locBtn").onclick = () => locate(p);
+  $("#pForm").onsubmit = e => {
+    e.preventDefault(); const u = me(); if (!u) { toast("Please login first."); go("login"); return; }
+    let lat = st.lat, lng = st.lng;
+    if (lat == null) { if (p) { toast("Tap the map to drop a pin first."); return; } lat = CENTER[0] + (Math.random() - .5) * .08; lng = CENTER[1] + (Math.random() - .5) * .08; }
+    const now = Date.now(), seg = $("#pSeg").checked;
+    const c = { id: nextId(), cat: "pickup", desc: $("#pType").value + " · " + $("#pQty").value + " · " + $("#pDate").value + ", " + $("#pSlot").value + (seg ? " · segregated" : ""), address: $("#pAddr").value.trim(), lat, lng, status: "Pending", created: now, hist: [{ s: "Pending", t: now }], user: u.email, photo: null };
+    const all = getAll(); all.push(c); if (!saveAll(all)) return;
+    const pts = seg ? 25 : 15; addPoints(u.email, pts);
+    $("#pForm").parentNode.innerHTML = successHTML(c.id, "Pickup booked. +" + pts + " eco points!");
+  };
+}
+
+function timeline(c) {
+  const lab = { "Pending": "Reported", "In Progress": "Team assigned and on the way", "Resolved": "Resolved" };
+  const li = STATUSES.map(s => { const h = c.hist.find(x => x.s === s); return '<li class="' + (h ? "done" : "") + '"><b>' + lab[s] + "</b>" + (h ? fmt(h.t) : "Waiting") + "</li>"; }).join("");
+  return '<div class="panel" style="margin-top:16px"><h3>' + c.id + " · " + CATS[c.cat] + ' <span class="tag ' + tagCls(c.status) + '">' + c.status + "</span></h3><p>" + esc(c.desc) + "<br><small>" + esc(c.address) + "</small></p>" +
+    (c.photo ? '<img src="' + c.photo + '" alt="Complaint photo" style="max-width:160px;border-radius:10px">' : "") +
+    '<ol class="timeline">' + li + "</ol>" +
+    (c.status === "Resolved" ? '<p>♻️ Your waste is now on its way to recycling. <a href="#/recycle"><b>See the journey</b></a></p>' : "") + "</div>";
+}
+function viewTrack() {
+  const u = me(); const mine = u ? getAll().filter(c => c.user === u.email).sort((a, b) => b.created - a.created) : [];
+  return '<section class="wrap narrow"><h2>Track your complaint</h2>' + (u ? '<p class="lead">Eco points: <b>' + (u.points || 0) + "</b> 🌱</p>" : '<p class="lead">Enter a complaint ID, or login to see all yours.</p>') +
+    '<div class="panel"><form id="tForm" class="row"><input id="tId" placeholder="e.g. SS-1004" aria-label="Complaint ID" style="flex:3"><button class="btn" type="submit" style="flex:1">Track</button></form></div><div id="tOut"></div>' +
+    (mine.length ? '<div class="panel" style="margin-top:16px"><h3>My complaints</h3>' + mine.map(c => '<div class="mine"><span><b>' + c.id + "</b> · " + CATS[c.cat] + " · " + ago(c.created) + '</span><span><span class="tag ' + tagCls(c.status) + '">' + c.status + '</span> <button class="btn sm alt" data-track="' + c.id + '">View</button></span></div>').join("") + "</div>" : "") + "</section>";
+}
+function mountTrack() {
+  function show(id) {
+    const c = getAll().find(x => x.id === id.trim().toUpperCase());
+    $("#tOut").innerHTML = c ? timeline(c) : '<div class="panel" style="margin-top:16px">No complaint found with that ID. Check it and try again.</div>';
+  }
+  $("#tForm").onsubmit = e => { e.preventDefault(); show($("#tId").value); };
+  document.querySelectorAll("[data-track]").forEach(b => b.onclick = () => { $("#tId").value = b.dataset.track; show(b.dataset.track); window.scrollTo(0, 0); });
+}
+
+const FLOW = {
+  wet: { name: "🥬 Wet waste", stages: [
+    ["🚚", "Collected in a green bin", "Covered vehicles pick it up daily so it does not rot on the street."],
+    ["🏭", "Reaches a composting or biogas plant", "Plastic and other contaminants are removed by hand and screens."],
+    ["🌡️", "Decomposes under control", "Windrow composting takes roughly 45 to 60 days. Biomethanation tanks make gas."],
+    ["🌱", "Output is ready", "Mature compost is screened and bagged. Gas is purified for use."]],
+    out: "Compost for parks and farms, and biogas for cooking or electricity." },
+  dry: { name: "📰 Dry waste", stages: [
+    ["🚚", "Collected in a blue bin", "Clean and dry material is worth far more to recyclers."],
+    ["🔀", "Sorted at a material recovery facility", "Paper, plastic, metal and glass are separated on a conveyor."],
+    ["📦", "Baled and sold", "Each material is compressed into bales and sent to recyclers."],
+    ["♻️", "Reprocessed", "Paper is pulped, plastic is shredded and melted, metal and glass are re-melted."]],
+    out: "Notebooks, cartons, polyester fibre, new bottles and metal sheets." },
+  ewaste: { name: "🔌 E-waste", stages: [
+    ["📞", "Pickup is booked through Safai Setu", "Never hand e-waste to a scrap vendor. It needs trained handling."],
+    ["🔧", "Dismantled by an authorised recycler", "Batteries, boards and casings are separated safely."],
+    ["🧪", "Materials are recovered", "Copper, aluminium, gold and plastics are extracted with controlled processes."],
+    ["🔁", "Returned to manufacturing", "Recovered metals go back into new products."]],
+    out: "Recovered copper, aluminium, precious metals and plastic granules." },
+  haz: { name: "☣️ Hazardous", stages: [
+    ["🧤", "Kept apart in a red bin", "Batteries, bulbs, medicines and sanitary waste must never mix with other waste."],
+    ["🔒", "Stored in sealed containers", "Collected separately by trained staff."],
+    ["🏗️", "Sent to an authorised treatment facility", "Handled at facilities approved by the pollution control authorities."],
+    ["🛡️", "Treated or safely disposed", "Some is co-processed in cement kilns, the rest is secure-landfilled."]],
+    out: "Safe disposal that keeps soil, water and workers protected." }
+};
+function viewRecycle() {
+  const tabs = Object.keys(FLOW).map((k, i) => '<button class="chip' + (i === 0 ? " on" : "") + '" data-flow="' + k + '">' + FLOW[k].name + "</button>").join("");
+  return '<section class="wrap narrow"><h2>After pickup: where does it go?</h2><p class="lead">Your waste does not disappear. Follow its journey from bin to rebirth.</p>' +
+    '<div class="chips" id="flowTabs">' + tabs + '</div><div class="cols"><div><div id="flowBox"></div></div><div><div class="panel"><h3>Your monthly impact</h3>' +
+    '<label for="kWet">Wet waste: <span id="vWet">20</span> kg</label><input id="kWet" type="range" min="0" max="100" value="20">' +
+    '<label for="kDry">Dry waste: <span id="vDry">10</span> kg</label><input id="kDry" type="range" min="0" max="100" value="10">' +
+    '<div class="res"><div><b id="oLand">30</b>kg kept out of landfill</div><div><b id="oComp">6</b>kg compost made</div><div><b id="oCo2">20</b>kg CO₂e avoided</div></div>' +
+    '<p class="hint">Indicative estimates for motivation, not audited figures.</p></div>' +
+    '<p style="margin-top:14px"><button class="btn" id="playBtn">▶ Play the journey</button></p></div></div></section>';
+}
+function mountRecycle() {
+  let cur = "wet", step = 0;
+  function draw() {
+    const f = FLOW[cur];
+    $("#flowBox").innerHTML = f.stages.map((s, i) => '<button class="stage' + (i === step ? " on" : "") + '" data-i="' + i + '"><span class="n">' + s[0] + "</span><span><b>" + s[1] + "</b><span>" + s[2] + "</span></span></button>").join("") + '<div class="reborn"><b>Reborn as:</b> ' + f.out + "</div>";
+    document.querySelectorAll(".stage").forEach(b => b.onclick = () => { step = Number(b.dataset.i); draw(); });
+  }
+  document.querySelectorAll("[data-flow]").forEach(b => b.onclick = () => {
+    cur = b.dataset.flow; step = 0; draw();
+    document.querySelectorAll("[data-flow]").forEach(x => x.classList.toggle("on", x === b));
+  });
+  $("#playBtn").onclick = () => {
+    timers.forEach(clearInterval); timers = []; step = 0; draw();
+    timers.push(setInterval(() => { if (step < FLOW[cur].stages.length - 1) { step++; draw(); } else { timers.forEach(clearInterval); timers = []; } }, 1500));
+  };
+  function calc() {
+    const w = Number($("#kWet").value), d = Number($("#kDry").value);
+    $("#vWet").textContent = w; $("#vDry").textContent = d;
+    $("#oLand").textContent = w + d; $("#oComp").textContent = Math.round(w * 0.3); $("#oCo2").textContent = Math.round(w * 0.4 + d * 1.2);
+  }
+  $("#kWet").oninput = calc; $("#kDry").oninput = calc; calc(); draw();
+}
+
+function viewLearn() {
+  return '<section class="wrap narrow"><h2>Four bins. One habit.</h2><p class="lead">Segregation at home is the cheapest way to make a city cleaner.</p><div class="bincards">' +
+    BINS_GUIDE.map(b => '<div class="bincard ' + (b.y ? "y" : "") + '" style="--c:' + b.c + '"><div class="e">' + b.e + "</div><h3>" + b.name + "</h3><p>" + b.items + "</p></div>").join("") +
+    '</div><div class="panel"><h3>Quick quiz: which bin?</h3><div id="quiz"></div></div></section>';
+}
+function mountLearn() {
+  const items = [["Banana peel", "wet"], ["Newspaper", "dry"], ["Old mobile phone", "ewaste"], ["Used battery", "haz"], ["Vegetable scraps", "wet"], ["Plastic bottle", "dry"], ["Broken CFL bulb", "haz"], ["Tea leaves", "wet"], ["Phone charger", "ewaste"], ["Cardboard box", "dry"], ["Expired medicine", "haz"], ["Glass jar", "dry"]];
+  const box = $("#quiz"); let order, i, score;
+  function start() { order = shuffle(items).slice(0, 5); i = 0; score = 0; show(); }
+  function show() {
+    if (i >= order.length) {
+      const u = me(); if (score >= 4 && u) { addPoints(u.email, 5); }
+      box.innerHTML = "<h3>You scored " + score + "/" + order.length + "</h3><p>" + (score >= 4 ? "Safai Champion! 🏆" + (u ? " +5 eco points." : "") : "Almost there. Check the bins above and try again.") + '</p><button class="btn" id="qAgain">Play again</button>';
+      $("#qAgain").onclick = start; return;
+    }
+    box.innerHTML = "<p>Item " + (i + 1) + " of " + order.length + "</p><h3>" + order[i][0] + '</h3><div class="qopts">' + BINS_GUIDE.map(b => '<button class="btn bin-' + b.k + '" data-k="' + b.k + '">' + b.name + "</button>").join("") + '</div><p class="fb" id="fb"></p>';
+    box.querySelectorAll("[data-k]").forEach(btn => btn.onclick = () => {
+      const right = order[i][1], ok = btn.dataset.k === right; if (ok) score++;
+      box.querySelectorAll("[data-k]").forEach(x => x.disabled = true);
+      const rb = BINS_GUIDE.find(b => b.k === right);
+      $("#fb").innerHTML = (ok ? "✅ Correct!" : "❌ It goes in " + rb.name + ".") + ' <button class="btn sm" id="qNext">' + (i === order.length - 1 ? "See score" : "Next") + "</button>";
+      $("#qNext").onclick = () => { i++; show(); };
+    });
+  }
+  start();
+}
+
+function viewLogin() {
+  return '<section class="wrap narrow"><h2>Welcome to Safai Setu</h2><span class="badge">' + (FB.on ? "☁️ Cloud sync is ON" : "💾 Offline demo mode (add Firebase keys to go live)") + '</span><div class="cols"><div class="panel"><div class="tabs"><button class="chip on" data-tab="in">Login</button><button class="chip" data-tab="up">Register</button></div>' +
+    '<form id="lForm"><label for="lEmail">Email</label><input id="lEmail" type="email" required><label for="lPass">Password</label><input id="lPass" type="password" required><p><button class="btn" type="submit">Login</button></p></form>' +
+    '<form id="gForm" style="display:none"><label for="gName">Full name</label><input id="gName" required><label for="gEmail">Email</label><input id="gEmail" type="email" required><label for="gPass">Password (min 6 characters)</label><input id="gPass" type="password" minlength="6" required><label for="gCode">Admin code (optional)</label><input id="gCode" placeholder="Leave empty for a citizen account"><p><button class="btn" type="submit">Create account</button></p></form></div>' +
+    '<div class="panel"><h3>Judges: try the demo</h3><p>One tap to explore both sides of the platform.</p><p><button class="btn" id="demoU">Login as citizen</button></p><p><button class="btn alt" id="demoA">Login as admin</button></p><p class="hint">Admin: admin@safai.in / admin123<br>Citizen: citizen@safai.in / city123</p></div></div></section>';
+}
+function mountLogin() {
+  function enter(u) { CUR = u; if (!FB.on) save(KEY.session, u.email); toast("Welcome, " + u.name.split(" ")[0] + "!"); go(u.role === "admin" ? "dashboard" : "report"); }
+  async function tryLogin(email, pass) {
+    email = email.trim().toLowerCase();
+    if (FB.on) { try { enter(await fbSignIn(email, pass)); } catch (e) { toast(authMsg(e)); } return; }
+    const u = load(KEY.users, []).find(x => x.email === email && x.pass === pass);
+    if (!u) { toast("Wrong email or password."); return; }
+    enter(u);
+  }
+  async function demo(email, pass, name, role) {
+    if (!FB.on) { tryLogin(email, pass); return; }
+    try { enter(await fbSignIn(email, pass)); }
+    catch (e) { try { enter(await fbRegister(name, email, pass, role)); } catch (e2) { toast(authMsg(e2)); } }
+  }
+  document.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => {
+    const up = b.dataset.tab === "up";
+    $("#lForm").style.display = up ? "none" : "block"; $("#gForm").style.display = up ? "block" : "none";
+    document.querySelectorAll("[data-tab]").forEach(x => x.classList.toggle("on", x === b));
+  });
+  $("#lForm").onsubmit = e => { e.preventDefault(); tryLogin($("#lEmail").value, $("#lPass").value); };
+  $("#gForm").onsubmit = async e => {
+    e.preventDefault();
+    const name = $("#gName").value.trim(), email = $("#gEmail").value.trim().toLowerCase(), pass = $("#gPass").value, code = $("#gCode").value.trim();
+    if (code && code !== ADMIN_CODE) { toast("That admin code is not correct."); return; }
+    const role = code ? "admin" : "citizen";
+    if (FB.on) { try { enter(await fbRegister(name, email, pass, role)); } catch (err) { toast(authMsg(err)); } return; }
+    const us = load(KEY.users, []);
+    if (us.some(u => u.email === email)) { toast("That email is already registered. Please login."); return; }
+    const u = { name, email, pass, role, points: 0 };
+    us.push(u); if (save(KEY.users, us)) enter(u);
+  };
+  $("#demoU").onclick = () => demo("citizen@safai.in", "city123", "Demo Citizen", "citizen");
+  $("#demoA").onclick = () => demo("admin@safai.in", "admin123", "City Admin", "admin");
+}
+
+/* ===== AI: smart priority (rule-based triage) ===== */
+function priority(c, all) {
+  let s = { dumping: 30, overflow: 25, missed: 20, road: 18, other: 10, pickup: 8 }[c.cat] || 10;
+  s += Math.min(30, (Date.now() - c.created) / 864e5 * 6);
+  const near = all.filter(x => x.id !== c.id && x.status !== "Resolved" && Math.abs(x.lat - c.lat) < .01 && Math.abs(x.lng - c.lng) < .01).length;
+  s += Math.min(20, near * 4);
+  if (/school|hospital|clinic|college|market|temple|mosque|church|station|medical|hazard|chemical|animal/i.test(c.desc + " " + c.address)) s += 15;
+  if (c.auto) s += 10;
+  s = Math.round(Math.min(100, s));
+  return { score: s, label: s >= 70 ? "High" : (s >= 45 ? "Medium" : "Low") };
+}
+
+/* ===== IoT: smart bins ===== */
+let BINS = [], BIN_LIVE = false, SIM_PAUSED = false, binLayer = null;
+const LH = {};
+function initBins() {
+  BIN_LIVE = false;
+  const d = [["BIN-01", "Sector 4 Market", .015, -.019, 88, 7], ["BIN-02", "Gandhi Nagar Park", .021, -.004, 38, 3], ["BIN-03", "Station Road", .006, .016, 76, 8], ["BIN-04", "College Gate", -.005, -.010, 55, 5], ["BIN-05", "Lake View Society", .028, .021, 22, 2.5], ["BIN-06", "Bus Stand", .001, -.003, 63, 6], ["BIN-07", "Hospital Gate", -.012, .011, 47, 4.5], ["BIN-08", "Metro Exit 2", .009, .004, 81, 7.5]];
+  BINS = d.map(x => ({ id: x[0], name: x[1], lat: CENTER[0] + x[2], lng: CENTER[1] + x[3], fill: x[4], rate: x[5], temp: 28 + Math.round(Math.random() * 8) }));
+}
+function trackFill(b) {
+  const a = LH[b.id] = LH[b.id] || []; const last = a[a.length - 1];
+  if (!last || last.f !== b.fill) { a.push({ t: Date.now(), f: b.fill }); if (a.length > 12) a.shift(); }
+}
+function rateOf(b) {
+  if (b.rate) return b.rate;
+  const a = LH[b.id];
+  if (a && a.length > 1) { const f = a[0], l = a[a.length - 1], dt = (l.t - f.t) / 36e5; if (dt > 0.01 && l.f > f.f) return (l.f - f.f) / dt; }
+  return 2;
+}
+function etaText(b) {
+  if (b.fill >= 100) return "Full now";
+  const h = (100 - b.fill) / rateOf(b);
+  return "AI forecast: full in ~" + (h < 1 ? Math.max(1, Math.round(h * 60)) + " min" : h.toFixed(1) + " h");
+}
+function fillColor(f) { return f >= 90 ? "#D63B2F" : (f >= 70 ? "#F2B01E" : "#1E8A52"); }
+function checkBinAlerts() {
+  if (FB.on && !(CUR && CUR.role === "admin")) return;
+  const all = getAll(); let changed = false;
+  BINS.forEach(b => {
+    if (b.fill >= 90 && !all.some(c => c.binId === b.id && c.status !== "Resolved")) {
+      const now = Date.now();
+      all.push({ id: nextIdFrom(all), cat: "overflow", desc: "Auto-alert: smart bin " + b.id + " is " + Math.round(b.fill) + "% full", address: b.name, lat: b.lat, lng: b.lng, status: "Pending", created: now, hist: [{ s: "Pending", t: now }], user: "iot@safai.in", photo: null, binId: b.id, auto: true });
+      changed = true; toast("🚨 IoT alert: " + b.name + " is " + Math.round(b.fill) + "% full. Complaint created automatically.");
+    }
+  });
+  if (changed) saveAll(all);
+}
+function tickBins() {
+  if (!BIN_LIVE && !SIM_PAUSED) BINS.forEach(b => { b.fill = Math.min(100, b.fill + b.rate * 0.12 * (0.4 + Math.random() * 1.2)); b.temp = Math.round((b.temp + (Math.random() - .5)) * 10) / 10; });
+  if (!SIM_PAUSED || BIN_LIVE) checkBinAlerts();
+  if (currentRoute() === "bins") drawBins();
+}
+function binCard(b) {
+  const f = Math.round(b.fill), c = fillColor(b.fill);
+  return '<div class="bcard"><div class="bhead"><b>' + esc(b.name) + "</b><span>" + esc(b.id) + '</span></div><div class="bbar"><i style="width:' + f + "%;background:" + c + '"></i></div><div class="bmeta"><b style="color:' + c + '">' + f + "% full</b><span>" + etaText(b) + "</span>" + (b.temp != null ? "<span>🌡 " + b.temp + "°C</span>" : "") + '</div><div class="bact"><a class="btn sm alt" target="_blank" rel="noopener" href="' + navURL(b) + '">Navigate</a>' + (BIN_LIVE ? "" : ' <button class="btn sm" data-empty="' + esc(b.id) + '">Simulate pickup</button>') + "</div></div>";
+}
+function viewBins() {
+  return '<section class="wrap"><h2>Smart bins, live</h2><p class="lead">An ultrasonic sensor inside each bin reports how full it is. At 90% Safai Setu raises a complaint by itself, and the AI forecast tells the team when the next bin will overflow.</p>' +
+    '<span class="badge" id="bMode"></span><div class="kpis" id="bSum"></div>' +
+    '<p id="bCtl"><button class="btn sm alt" id="bPause">Pause simulation</button> <button class="btn sm alt" id="bReset">Reset simulation</button></p>' +
+    '<div class="cols"><div id="bMap" class="map tall"></div><div class="bgrid" id="bGrid"></div></div></section>';
+}
+function drawBins() {
+  const g = document.getElementById("bGrid"); if (!g) return;
+  const crit = BINS.filter(b => b.fill >= 90).length, warn = BINS.filter(b => b.fill >= 70 && b.fill < 90).length;
+  document.getElementById("bMode").textContent = BIN_LIVE ? "🟢 Live data from ESP32 sensors via Firebase" : "🧪 Simulated sensors (connect an ESP32 to go live)";
+  document.getElementById("bSum").innerHTML = kpi("Bins online", BINS.length, "#11261E") + kpi("Filling up (70%+)", warn, "#F2B01E") + kpi("Critical (90%+)", crit, "#D63B2F");
+  const ctl = document.getElementById("bCtl"); if (ctl) ctl.style.display = BIN_LIVE ? "none" : "block";
+  g.innerHTML = BINS.slice().sort((a, b) => b.fill - a.fill).map(binCard).join("");
+  if (binLayer && mapOK()) {
+    binLayer.clearLayers();
+    BINS.forEach(b => L.circleMarker([b.lat, b.lng], { radius: 9, color: "#11261E", weight: 2, fillColor: fillColor(b.fill), fillOpacity: 1 }).addTo(binLayer)
+      .bindPopup("<b>" + esc(b.name) + "</b><br>" + Math.round(b.fill) + '% full<br><a target="_blank" rel="noopener" href="' + navURL(b) + '">Navigate here</a>'));
+  }
+}
+function mountBins() {
+  const mapEl = document.getElementById("bMap");
+  if (mapOK()) { const m = baseMap("bMap"); binLayer = L.layerGroup().addTo(m); } else { binLayer = null; mapEl.innerHTML = '<p class="mapfail">The map needs internet. Bin cards still update live.</p>'; }
+  drawBins();
+  $("#bGrid").addEventListener("click", e => {
+    const b = e.target.closest("[data-empty]"); if (!b) return;
+    const bin = BINS.find(x => x.id === b.dataset.empty); if (bin) { bin.fill = 3; toast(bin.name + " emptied. Fill level reset."); drawBins(); }
+  });
+  $("#bPause").onclick = () => { SIM_PAUSED = !SIM_PAUSED; $("#bPause").textContent = SIM_PAUSED ? "Resume simulation" : "Pause simulation"; };
+  $("#bReset").onclick = () => { initBins(); drawBins(); toast("Simulation reset."); };
+}
+
+/* ===== AI: waste scanner (TensorFlow.js MobileNet, runs in the browser) ===== */
+const AI_MAP = {
+  wet: ["banana", "orange", "lemon", "strawberry", "apple", "pineapple", "fig", "pomegranate", "broccoli", "cauliflower", "cabbage", "cucumber", "zucchini", "bell pepper", "mushroom", "corn", "artichoke", "pizza", "bagel", "mashed potato", "jackfruit", "custard apple", "acorn squash", "butternut squash", "spaghetti squash", "granny smith", "cheeseburger", "hotdog", "burrito", "ice cream"],
+  dry: ["water bottle", "pop bottle", "beer bottle", "wine bottle", "water jug", "whiskey jug", "carton", "crate", "paper towel", "envelope", "plastic bag", "packet", "cup", "coffee mug", "milk can", "tray", "jar", "bucket", "binder", "book jacket", "bottlecap", "pill bottle"],
+  ewaste: ["cellular telephone", "cell", "mobile phone", "laptop", "notebook computer", "desktop computer", "keyboard", "computer mouse", "remote control", "monitor", "screen", "television", "ipod", "hard disc", "modem", "printer", "radio", "joystick", "cassette player", "digital watch", "loudspeaker", "power drill", "hand-held computer", "projector"],
+  haz: ["lighter", "matchstick", "candle", "syringe", "lotion", "sunscreen", "oil filter", "gasmask", "soap dispenser", "lipstick", "hair spray", "band aid", "paintbrush"]
+};
+const AI_TIPS = {
+  wet: "Keep it in a covered green bin. Never wrap it in a plastic bag.",
+  dry: "Rinse and dry it first. Flatten cartons and bottles to save space.",
+  ewaste: "Do not throw it in a bin. Book an e-waste pickup so it reaches an authorised recycler.",
+  haz: "Seal it and keep it separate from other waste. Book a hazardous waste pickup."
+};
+const SP = {};
+function loadScript(src) {
+  return SP[src] || (SP[src] = new Promise((res, rej) => { const s = document.createElement("script"); s.src = src; s.onload = res; s.onerror = () => { delete SP[src]; rej(new Error("load failed")); }; document.head.appendChild(s); }));
+}
+let mnet = null;
+async function getModel() {
+  if (mnet) return mnet;
+  await loadScript("https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js");
+  await loadScript("https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js");
+  mnet = await mobilenet.load(); return mnet;
+}
+function aiBin(preds) {
+  for (const p of preds) {
+    const name = p.className.toLowerCase();
+    for (const k of Object.keys(AI_MAP)) { if (AI_MAP[k].some(w => new RegExp("\\b" + w + "\\b").test(name))) return { k, p }; }
+  }
+  return null;
+}
+function viewScan() {
+  return '<section class="wrap narrow"><h2>AI waste scanner</h2><p class="lead">Take a photo of an item. A neural network running right in your browser tells you which bin it belongs in.</p>' +
+    '<div class="panel scanbox"><label for="sFile">Take a photo or choose one</label><input id="sFile" type="file" accept="image/*" capture="environment"><img id="sImg" alt="Item to scan"><div id="sOut"></div>' +
+    '<p class="hint">Uses a pre-trained MobileNet model, so it works best on common items like bottles, fruit and electronics. It needs internet the first time to download the model.</p></div></section>';
+}
+function mountScan() {
+  const out = $("#sOut"), img = $("#sImg");
+  function show(preds) {
+    const hit = aiBin(preds), top = preds[0];
+    const seen = preds.slice(0, 3).map(p => esc(p.className.split(",")[0]) + " " + Math.round(p.probability * 100) + "%").join(", ");
+    if (!hit || hit.p.probability < 0.08) {
+      out.innerHTML = '<div class="verdict" style="--c:#5b6b62"><h3>Not sure about this one</h3><p>The AI sees: ' + seen + '.</p><p>When in doubt: keep it clean and dry, put it in the blue dry bin, and ask your ward office. Never mix it with wet waste.</p></div>'; return;
+    }
+    const b = BINS_INFO(hit.k), conf = Math.round(hit.p.probability * 100);
+    out.innerHTML = '<div class="verdict ' + (b.y ? "y" : "") + '" style="--c:' + b.c + '"><h3>' + b.e + " Put it in the " + b.name + " bin</h3><p>The AI sees: " + seen + '.</p><div class="conf"><i style="width:' + Math.max(8, conf) + '%"></i></div><p>Confidence for the match: ' + conf + "%</p><p>" + AI_TIPS[hit.k] + "</p>" +
+      (hit.k === "ewaste" || hit.k === "haz" ? '<p><button class="btn sm alt" data-go="pickup">Book a pickup</button></p>' : "") + "</div>";
+  }
+  $("#sFile").onchange = e => {
+    const f = e.target.files[0]; if (!f) return;
+    out.innerHTML = "<p>🤖 Loading the AI model. The first time takes about 10 seconds.</p>";
+    img.onload = async () => {
+      try { const model = await getModel(); show(await model.classify(img, 5)); }
+      catch (err) { console.error(err); out.innerHTML = "<p>The AI model could not load. Check your internet connection and try again.</p>"; }
+    };
+    img.style.display = "block"; img.src = URL.createObjectURL(f);
+  };
+}
+function BINS_INFO(k) { return BINS_GUIDE.find(b => b.k === k); }
+
+function viewDash() {
+  const all = getAll(); const cnt = s => all.filter(c => c.status === s).length;
+  const resolved = all.filter(c => c.status === "Resolved");
+  const times = resolved.map(c => { const r = c.hist.find(h => h.s === "Resolved"); return r ? r.t - c.created : 0; });
+  const avg = times.length ? (times.reduce((a, b) => a + b, 0) / times.length / 864e5).toFixed(1) : "0";
+  const rate = all.length ? Math.round(resolved.length / all.length * 100) : 0;
+  const cats = Object.keys(CATS).map(k => [CATS[k], all.filter(c => c.cat === k).length]).sort((a, b) => b[1] - a[1]);
+  const mx = Math.max(1, cats[0][1]);
+  const open = all.filter(c => c.status !== "Resolved"); const openCats = {};
+  open.forEach(c => { openCats[c.cat] = (openCats[c.cat] || 0) + 1; });
+  const topK = Object.keys(openCats).sort((a, b) => openCats[b] - openCats[a])[0];
+  const hs = hotspot(all); const route = routeURL(all);
+  const ranked = open.map(c => ({ c, p: priority(c, all) })).sort((a, b) => b.p.score - a.p.score);
+  const pmap = {}; ranked.forEach(x => { pmap[x.c.id] = x.p; });
+  const ordered = ranked.map(x => x.c).concat(resolved.slice().sort((a, b) => b.created - a.created));
+  const rows = ordered.map(c => { const p = pmap[c.id]; return '<tr><td><b>' + c.id + "</b>" + (c.auto ? " 📡" : "") + "</td><td>" + CATS[c.cat] + "</td><td>" + esc(c.address) + "</td><td>" + ago(c.created) + "</td><td>" + (p ? '<span class="tag pri-' + p.label + '">' + p.label + " " + p.score + "</span>" : "–") + '</td><td><select data-id="' + c.id + '" aria-label="Status for ' + c.id + '">' + STATUSES.map(s => "<option" + (s === c.status ? " selected" : "") + ">" + s + "</option>").join("") + '</select></td><td><a class="btn sm alt" target="_blank" rel="noopener" href="' + navURL(c) + '">Navigate</a></td></tr>'; }).join("");
+  const triage = ranked.slice(0, 5).map(x => '<div class="mine"><span><b>' + x.c.id + "</b> · " + CATS[x.c.cat] + " · " + esc(x.c.address) + '</span><span><span class="tag pri-' + x.p.label + '">' + x.p.label + " " + x.p.score + '</span> <a class="btn sm alt" target="_blank" rel="noopener" href="' + navURL(x.c) + '">Navigate</a></span></div>').join("");
+  return '<section class="dhead"><div class="wrap"><h2>Control room</h2><div class="mantra" id="mantra">Aaj ka mantra: ' + SLOGANS[0] + "</div></div></section>" +
+    '<section class="wrap"><div class="kpis">' +
+    kpi("Total reports", all.length, "#11261E") + kpi("Pending", cnt("Pending"), "#D63B2F") + kpi("In progress", cnt("In Progress"), "#F2B01E") + kpi("Resolved", cnt("Resolved"), "#1E8A52") + kpi("Resolution rate", rate + "%", "#1F63C6") + kpi("Avg. days to resolve", avg, "#5b6b62") + kpi("Smart bins 80%+ full", BINS.filter(b => b.fill >= 80).length, "#1F63C6") + "</div>" +
+    '<div class="dgrid"><div class="panel"><h3>Status split</h3>' + donut([{ l: "Pending", v: cnt("Pending"), c: SCOLOR["Pending"] }, { l: "In progress", v: cnt("In Progress"), c: SCOLOR["In Progress"] }, { l: "Resolved", v: cnt("Resolved"), c: SCOLOR["Resolved"] }]) + "</div>" +
+    '<div class="panel"><h3>Reported vs resolved (14 days)</h3>' + lineChart(trendData(all)) + "</div>" +
+    '<div class="panel"><h3>Problems by type</h3>' + cats.map(c => '<div class="hbar"><span>' + c[0] + "</span><div><i style=\"width:" + Math.round(c[1] / mx * 100) + '%"></i></div><b>' + c[1] + "</b></div>").join("") + (topK ? '<p class="hint">Most open complaints: <b>' + CATS[topK] + "</b></p>" : "") + "</div></div>" +
+    '<div class="panel" style="margin-bottom:16px"><h3>🤖 AI triage: fix these first</h3><p class="hint">Smart priority scores each open complaint from its type, age, nearby complaints, sensitive places and IoT alerts.</p>' + (triage || "<p>Nothing open. The city is sparkling. ✨</p>") + "</div>" +
+    '<div class="panel"><h3>Live city map</h3><div class="chips" id="mapFilter"><button class="chip on" data-f="all">All</button>' + STATUSES.map(s => '<button class="chip" data-f="' + s + '">' + s + "</button>").join("") + "</div>" +
+    (hs ? '<div class="hot">🔥 <b>Hotspot:</b> ' + hs.n + ' open complaints within about 1 km. <a target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=' + hs.lat.toFixed(5) + "," + hs.lng.toFixed(5) + '"><b>Navigate there</b></a></div>' : "") +
+    (route ? '<p><a class="btn sm" target="_blank" rel="noopener" href="' + route + '">🧭 Plan pickup route (nearest 9 open complaints)</a></p>' : "") +
+    '<p class="hint">Round markers are IoT smart bins. Pins are complaints.</p><div id="dMap" class="map tall"></div></div>' +
+    '<div class="panel" style="margin-top:16px"><h3>All complaints</h3><div class="tw" id="dTable"><table><thead><tr><th>ID</th><th>Type</th><th>Location</th><th>Age</th><th>Priority</th><th>Status</th><th>Go</th></tr></thead><tbody>' + rows + "</tbody></table></div></div></section>";
+}
+function kpi(l, v, c) { return '<div class="kpi" style="--c:' + c + '"><b>' + v + "</b><span>" + l + "</span></div>"; }
+function mountDash() {
+  let i = 0; const el = $("#mantra");
+  timers.push(setInterval(() => { i = (i + 1) % SLOGANS.length; if (el) el.textContent = "Aaj ka mantra: " + SLOGANS[i]; }, 3500));
+  $("#dTable").addEventListener("change", e => {
+    const sel = e.target.closest("select[data-id]"); if (!sel) return;
+    const all = getAll(), c = all.find(x => x.id === sel.dataset.id); if (!c) return;
+    c.status = sel.value; const idx = STATUSES.indexOf(c.status);
+    c.hist = c.hist.filter(h => STATUSES.indexOf(h.s) < idx); c.hist.push({ s: c.status, t: Date.now() });
+    STATUSES.forEach((s, k) => { if (k < idx && !c.hist.some(h => h.s === s)) c.hist.push({ s, t: Date.now() - 1000 * (3 - k) }); });
+    c.hist.sort((a, b) => STATUSES.indexOf(a.s) - STATUSES.indexOf(b.s));
+    if (c.status === "Resolved" && c.binId && !BIN_LIVE) { const bin = BINS.find(x => x.id === c.binId); if (bin) bin.fill = 4; }
+    if (saveAll(all)) { toast(c.id + " marked " + c.status); render(true); }
+  });
+  const el2 = document.getElementById("dMap");
+  if (!mapOK()) { el2.innerHTML = '<p class="mapfail">The live map needs internet. Charts and the table still work offline.</p>'; return; }
+  const m = baseMap("dMap"), layer = L.layerGroup().addTo(m), all = getAll();
+  const hs = hotspot(all); if (hs) L.circle([hs.lat, hs.lng], { radius: 700, color: "#D63B2F", weight: 2, fillOpacity: .12 }).addTo(m);
+  BINS.forEach(b => L.circleMarker([b.lat, b.lng], { radius: 8, color: "#11261E", weight: 2, fillColor: fillColor(b.fill), fillOpacity: 1 }).addTo(m).bindPopup("<b>" + esc(b.name) + "</b><br>Smart bin · " + Math.round(b.fill) + "% full"));
+  function draw(f) {
+    layer.clearLayers();
+    all.filter(c => f === "all" || c.status === f).forEach(c => {
+      L.marker([c.lat, c.lng], { icon: pin(SCOLOR[c.status]) }).addTo(layer)
+        .bindPopup("<b>" + c.id + "</b><br>" + CATS[c.cat] + "<br>" + esc(c.address) + "<br>" + c.status + '<br><a target="_blank" rel="noopener" href="' + navURL(c) + '">Navigate here</a>');
+    });
+  }
+  draw("all");
+  document.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { draw(b.dataset.f); document.querySelectorAll("[data-f]").forEach(x => x.classList.toggle("on", x === b)); });
+}
+
+/* ===== router ===== */
+let timers = [];
+function cleanup() { killMaps(); binLayer = null; timers.forEach(clearInterval); timers = []; }
+function renderNav(active) {
+  const u = me();
+  const links = [["home", "Home"], ["report", "Report"], ["pickup", "Pickup"], ["track", "Track"], ["bins", "Smart bins"], ["scan", "AI scan"], ["recycle", "After pickup"], ["learn", "Learn"]];
+  if (u && u.role === "admin") links.push(["dashboard", "Control room"]);
+  $("#nav").innerHTML = links.map(l => '<a href="#/' + l[0] + '" class="' + (l[0] === active ? "on" : "") + '">' + l[1] + "</a>").join("") +
+    (u ? '<a href="#/home" data-logout="1">Logout (' + esc(u.name.split(" ")[0]) + ")</a>" : '<a href="#/login" class="' + (active === "login" ? "on" : "") + '">Login</a>');
+  $("#nav").classList.remove("open");
+}
+const VIEWS = { home: [viewHome, mountHome], report: [viewReport, mountReport], pickup: [viewPickup, mountPickup], track: [viewTrack, mountTrack], bins: [viewBins, mountBins], scan: [viewScan, mountScan], recycle: [viewRecycle, mountRecycle], learn: [viewLearn, mountLearn], login: [viewLogin, mountLogin], dashboard: [viewDash, mountDash] };
+function render(keep) {
+  const y = window.scrollY || 0;
+  cleanup();
+  const name = currentRoute();
+  const u = me();
+  if (name === "dashboard" && (!u || u.role !== "admin")) { toast("Admin login required. Tap 'Login as admin'."); go("login"); return; }
+  if ((name === "report" || name === "pickup") && !u) { toast("Please login to continue."); go("login"); return; }
+  $("#app").innerHTML = VIEWS[name][0]();
+  renderNav(name);
+  VIEWS[name][1]();
+  window.scrollTo(0, keep ? y : 0);
+}
+document.addEventListener("click", e => {
+  const g = e.target.closest("[data-go]"); if (g) { go(g.dataset.go); return; }
+  const lo = e.target.closest("[data-logout]");
+  if (lo) {
+    e.preventDefault(); CUR = null;
+    try { localStorage.removeItem(KEY.session); } catch (x) { }
+    if (FB.on) FB.m.auth.signOut(FB.auth).catch(() => { });
+    toast("Logged out. Stay clean!"); if (location.hash === "#/home") render(); else go("home");
+  }
+});
+$("#burger").onclick = () => $("#nav").classList.toggle("open");
+window.addEventListener("hashchange", () => render());
+
+async function boot() {
+  $("#teamName").textContent = TEAM;
+  const ok = await Promise.race([initFirebase(), new Promise(r => setTimeout(() => { FB.abort = true; r(false); }, 9000))]);
+  if (ok) { await authReady(); subscribeData(); }
+  else {
+    if (FIREBASE_CONFIG.apiKey.indexOf("YOUR_") !== 0) toast("Cloud unavailable. Running in offline demo mode.");
+    initData();
+    const e = load(KEY.session, null); if (e) CUR = load(KEY.users, []).find(u => u.email === e) || null;
+  }
+  initBins();
+  setInterval(tickBins, 2500);
+  render();
+}
+boot();
+</script>
+</body>
+</html>
